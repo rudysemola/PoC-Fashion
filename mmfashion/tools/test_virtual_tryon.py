@@ -21,7 +21,7 @@ def parse_args():
         '--stage',
         required=True,
         help='test GMM(Geometric Matching Module) or TOM(Try-On Module)')
-    parser.add_argument('--work_dir', help='the dir to save logs and models')
+    parser.add_argument('--work_dir', help='the dir to save logs and checkpoint')
     parser.add_argument(
         '--checkpoint',
         help='checkpoint file',

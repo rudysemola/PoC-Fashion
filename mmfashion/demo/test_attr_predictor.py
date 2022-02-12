@@ -26,7 +26,7 @@ def parse_args():
     parser.add_argument(
         '--config',
         help='test config file path',
-        default='configs/attribute_predict/global_predictor_vgg_attr.py')
+        default='configs/attribute_predict_coarse/global_predictor_vgg_attr.py')
     parser.add_argument(
         '--use_cuda', type=bool, default=True, help='use gpu or not')
     args = parser.parse_args()
@@ -38,6 +38,7 @@ def main():
     cfg = Config.fromfile(args.config)
 
     img_tensor = get_img_tensor(args.input, args.use_cuda)
+    print(type(img_tensor))
     # global attribute predictor will not use landmarks
     # just set a default value
     landmark_tensor = torch.zeros(8)

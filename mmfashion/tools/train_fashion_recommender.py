@@ -18,7 +18,7 @@ def parse_args():
         help='train config file path',
         default='configs/fashion_recommendation/'
         'type_aware_recommendation_polyvore.py')
-    parser.add_argument('--work_dir', help='the dir to save logs and models')
+    parser.add_argument('--work_dir', help='the dir to save logs and checkpoint')
     parser.add_argument(
         '--resume_from', help='the checkpoint file to resume from')
     parser.add_argument(

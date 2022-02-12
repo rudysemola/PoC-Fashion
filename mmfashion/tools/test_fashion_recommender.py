@@ -17,7 +17,7 @@ def parse_args():
         help='test config file path',
         default='configs/fashion_recommendation/'
         'type_aware_recommendation_polyvore_disjoint.py')
-    parser.add_argument('--work_dir', help='the dir to save logs and models')
+    parser.add_argument('--work_dir', help='the dir to save logs and checkpoint')
     parser.add_argument(
         '--checkpoint',
         help='checkpoint file',
