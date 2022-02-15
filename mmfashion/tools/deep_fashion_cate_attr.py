@@ -10,11 +10,8 @@ import torchvision.transforms as transforms
 from PIL import Image
 from torch.utils.data.dataset import Dataset
 
-from .registry import DATASETS
 
-
-@DATASETS.register_module
-class AttrDataset(Dataset):
+class DeepFashion(Dataset):
     CLASSES = None
 
     def __init__(self,
@@ -25,6 +22,7 @@ class AttrDataset(Dataset):
                  bbox_file,
                  landmark_file,
                  img_size,
+                 label_type='cate',
                  idx2id=None):
         self.img_path = img_path
 
@@ -36,6 +34,9 @@ class AttrDataset(Dataset):
             transforms.ToTensor(),
             normalize,
         ])
+
+        # setup label type
+        self.label_type = label_type
 
         # read img names
         fp = open(img_file, 'r')
@@ -86,33 +87,21 @@ class AttrDataset(Dataset):
         img.thumbnail(self.img_size, Image.ANTIALIAS)
         img = self.transform(img)
 
-        label = torch.from_numpy(self.labels[idx])
-        cate = torch.LongTensor([int(self.categories[idx]) - 1])
+        attribute = torch.from_numpy(self.labels[idx])
+        cate = torch.LongTensor([int(self.categories[idx]) - 1])  #
+        cate = torch.LongTensor(cate[0])
 
-        landmark = []
-        # compute the shiftness
-        if self.landmarks is not None:
-            origin_landmark = self.landmarks[idx]
-            for i, l in enumerate(origin_landmark):
-                if i % 2 == 0:  # x
-                    l_x = max(0, l - x1)
-                    l_x = float(l_x) / bbox_w * self.img_size[0]
-                    landmark.append(l_x)
-                else:  # y
-                    l_y = max(0, l - y1)
-                    l_y = float(l_y) / bbox_h * self.img_size[1]
-                    landmark.append(l_y)
-            landmark = torch.from_numpy(np.array(landmark)).float()
-        else:
-            # here no landmark will be used, just use zero for initialization
-            # (global predictor)
-            landmark = torch.zeros(8)
-
-        data = {'img': img, 'attr': label, 'cate': cate, 'landmark': landmark}
+        data = {'img': img, 'attr': attribute, 'cate': cate}
         return data
 
     def __getitem__(self, idx):
-        return self.get_basic_item(idx)
+        data = self.get_basic_item(idx)
+        if self.label_type == 'cate':
+            return data['img'], data['cate']
+        elif self.label_type == 'attr':
+            return data['img'], data['attr']
+        elif self.label_type == 'cate_attr':
+            pass  # TODO
 
     def __len__(self):
         return len(self.img_list)
