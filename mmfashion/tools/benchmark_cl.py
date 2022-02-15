@@ -14,9 +14,14 @@ from mmfashion.datasets import get_dataset
 from mmfashion.models import build_predictor
 from mmfashion.utils import init_weights_from
 
+#Pytorch import
+import torch
 # Avalanche import
 import avalanche
-from avalanche.benchmarks.generators import nc_benchmark, ni_benchmark
+from avalanche.benchmarks.generators import nc_benchmark
+from avalanche.benchmarks.utils import AvalancheDataset
+from avalanche.benchmarks.utils import AvalancheTensorDataset
+
 
 """
 Parse Arguments
@@ -44,6 +49,25 @@ def parse_args():
         help='job launcher')
     args = parser.parse_args()
     return args
+
+
+"""
+Utilis function (DATA Manage)
+Param: 
+Return: 
+"""
+def get_xy(data_deepfashion):
+    for i, example in enumerate(data_deepfashion): # example perche'? :)
+        x_tmp = data_deepfashion[i]['img']
+        y_tmp = data_deepfashion[i]['cate']
+        if i == 0:
+            x = x_tmp
+            y = y_tmp
+        else:
+            x = torch.cat((x, x_tmp), 0)
+            y = torch.cat((y, y_tmp), 0)
+        print(i) #debug
+    return x, y
 
 
 """
@@ -84,6 +108,37 @@ def main():
     dataset = get_dataset(cfg.data.train)
     print('dataset loaded')
 
+    ## Print for test (Dataset)
+    print("cfg.data.train: ", cfg.data.train)
+    print("dataset type: ", type(dataset))
+    print("dataset: ", dataset)
+    print(dataset.__len__())
+    print("dataset: ", dataset[1])
+    print()
+
+    ## data = {'img': img, 'attr': label, 'cate': cate, 'landmark': landmark}
+    ## Prepare dataset for Avalanche benchmark
+    x_data,y_data = get_xy(dataset) # TODO: here
+    # Create the AvalancheDataset
+    avalanche_dataset = AvalancheTensorDataset(x_data,y_data)
+    print('avalanche_dataset: ', avalanche_dataset)
+    print("x_data idx: ", x_data[1])
+    print("y_data idx: ", y_data[1])
+    # Given these two sets we can simply iterate them to get the examples one by one
+    #for i, example in enumerate(dataset):
+    #    pass
+    #print("Num. examples processed: {}".format(i))
+
+    # or use a Pytorch DataLoader
+    #train_loader = torch.utils.data.DataLoader(dataset, batch_size=32, shuffle=True)
+    #print("train_loader type: ", type(train_loader))
+    #print("train_loader: ", train_loader)
+    #for i, mini_ex in enumerate(train_loader):
+    #    print("mini_ex: ", mini_ex)
+        #pass
+    #print("Num. mini-batch processed: {}".format(i))
+
+
     # train
     """
     train_predictor(
@@ -99,12 +154,10 @@ def main():
 
     ## Use nc_benchmark to setup the scenario and benchmark
     #TODO: use dataset as input to avalanche benchmark!
-    scenario = nc_benchmark(dataset, dataset, n_experiences=10, shuffle=True, seed=1234, task_labels=False)
+    #scenario = nc_benchmark(dataset, dataset, n_experiences=10, shuffle=True, seed=1234, task_labels=False)
 
     ## Print for test
     #TODO
-    print("cfg.data.train: ", cfg.data.train)
-    print("dataset type: ", type(dataset))
 
     #print("scenario: ", scenario)
     """
