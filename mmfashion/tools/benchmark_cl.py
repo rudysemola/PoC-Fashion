@@ -115,7 +115,7 @@ def main():
     # build Benchmarks
 
     ## Use nc_benchmark to setup the scenario and benchmark
-    scenario = nc_benchmark(dataset, dataset, n_experiences=10, shuffle=True, seed=1234, task_labels=False)
+    scenario = nc_benchmark(dataset, dataset, n_experiences=5, shuffle=True, seed=1234, task_labels=False)
 
     ## Print for test
     ## Print for test (Dataset) DEBUG
@@ -140,10 +140,14 @@ def main():
         print(y)
         break
     print("Num. mini-batch processed: {}".format(i))
+    print()
+    print("dataset.categories: ", type(dataset.targets))
+    #print(dataset.targets[1])
+    #print(dataset.targets)
     ## data = {'img': img, 'attr': label, 'cate': cate, 'landmark': landmark}
 
-    #print("scenario: ", scenario)
-    """
+    print("scenario: ", scenario)
+
     train_stream = scenario.train_stream
     print("train_stream: ", train_stream)
     for experience in train_stream:
@@ -152,7 +156,6 @@ def main():
         training_dataset = experience.dataset
         print('Task {} batch {} -> train'.format(t, exp_id))
         print('This batch contains', len(training_dataset), 'patterns')
-    """
 
 
 """

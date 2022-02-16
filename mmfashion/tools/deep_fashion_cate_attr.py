@@ -1,5 +1,6 @@
 from __future__ import division
 import os
+from typing import List
 
 import numpy as np
 import torch
@@ -45,11 +46,11 @@ class DeepFashion(Dataset):
         # read attribute labels and category annotations
         self.labels = np.loadtxt(label_file, dtype=np.float32)
 
-        # read categories
-        self.categories = []
+        # read categories # self.targets: List[int] = []
+        self.targets: List[int] = []
         catefn = open(cate_file).readlines()
         for i, line in enumerate(catefn):
-            self.categories.append(line.strip('\n'))
+            self.targets.append(int(line.strip('\n')))
 
         self.img_size = img_size
 
@@ -88,7 +89,7 @@ class DeepFashion(Dataset):
         img = self.transform(img)
 
         attribute = torch.from_numpy(self.labels[idx])
-        cate = torch.LongTensor([int(self.categories[idx]) - 1])  #
+        cate = torch.LongTensor([int(self.targets[idx]) - 1])  #
         cate = torch.LongTensor(cate[0])
 
         data = {'img': img, 'attr': attribute, 'cate': cate}
