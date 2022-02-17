@@ -52,3 +52,31 @@ class DataSetting():
             bbox_file=os.path.join(data_root, 'Anno_fine/val_bbox.txt'),
             landmark_file=os.path.join(data_root, 'Anno_fine/val_landmarks.txt'),
             img_size=img_size)
+
+
+"""
+Model Settings
+"""
+class ModelSetting():
+    def __init__(self):
+        self.arch = 'vgg'
+        self.category_num = 50  # num of categories
+        self.img_size = (224, 224)
+
+        self.model = dict(
+            type='GlobalCatePredictorFashion',
+            backbone=dict(type='Vgg', layer_setting='vgg16'),
+            global_pool=dict(
+                type='GlobalPooling',
+                inplanes=(7, 7),
+                pool_plane=(2, 2),
+                inter_channels=[512, 1024],
+                outchannels=1024),
+            cate_predictor=dict(
+                type='CatePredictor',
+                inchannels=1024,
+                outchannels=self.category_num,
+                loss_cate=dict(type='CELoss', ratio=1, weight=None, reduction='mean')),
+            pretrained='checkpoint/vgg16.pth') # checkpoint petrained
+
+        self.pooling = 'RoI' # ?

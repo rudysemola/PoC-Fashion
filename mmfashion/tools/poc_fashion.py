@@ -3,6 +3,10 @@
     Training (Avalanche) loop
 """
 
+"mmFashion import"
+from mmfashion.models import build_predictor
+from mmfashion.utils import init_weights_from
+
 "Avalanche import"
 import avalanche
 from avalanche.benchmarks.generators import nc_benchmark
@@ -20,14 +24,18 @@ from torch.optim import SGD
 "Python Files"
 from deep_fashion_cate_attr import DeepFashion
 from utils_config import DatasetSetting
+from utils_config import ModelSetting
 
 
 """
 Function main
 """
 def main():
-    "Config - Dataset"
+    "Configs"
+    # dataset
     data_cfg = DatasetSetting()
+    # model
+    model_cfg = ModelSetting()
 
     "Fashion - Scenario and Benchmarck"
     # data loader (TR)
@@ -42,9 +50,13 @@ def main():
                           data_cfg.data.val['img_size'])
     print('dataset loaded')
 
-    # build Benchmarks
-    ## Use nc_benchmark to setup the scenario and benchmark
+    # build Benchmarks - Use nc_benchmark to setup the scenario and benchmark
     scenario = nc_benchmark(train_dataset, val_dataset, n_experiences=5, shuffle=True, seed=1234, task_labels=False)
+
+    "Fashion - build model"
+    # build model
+    model = build_predictor(model_cfg.model)
+    print('model built')
 
     # Print for dataset and benchmark test (DEBUG)
     print("Tot len train DT: ", len(train_dataset))
@@ -72,6 +84,9 @@ def main():
         print("No. Classes: ", len(experience_val.classes_in_this_experience))
         print("Current Classes: ", experience_val.classes_in_this_experience)
         print()
+
+    # Print Model test (DEBUG)
+    print(model)
 
 
 
