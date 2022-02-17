@@ -156,6 +156,8 @@ def main():
         training_dataset = experience.dataset
         print('Task {} batch {} -> train'.format(t, exp_id))
         print('This batch contains', len(training_dataset), 'patterns')
+        print("No. Classes: ", len(experience.classes_in_this_experience))
+        print("Current Classes: ", experience.classes_in_this_experience)
 
 
 """
