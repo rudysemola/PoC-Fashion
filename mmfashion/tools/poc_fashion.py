@@ -18,13 +18,12 @@ from avalanche.training.strategies import Cumulative, Replay
 "Pytorch import"
 import torch
 from torch.optim import SGD
-
-# from torch.nn import CrossEntropyLoss #TODO: define LOSS
+from torch.nn import CrossEntropyLoss
 
 "Python Files"
 from deep_fashion_cate_attr import DeepFashion
 from utils_config import DatasetSetting
-from utils_config import ModelSetting
+from global_cate_fashion_predictor import GlobalCatePredictorFashion
 
 
 """
@@ -34,8 +33,12 @@ def main():
     "Configs"
     # dataset
     data_cfg = DatasetSetting()
-    # model
-    model_cfg = ModelSetting()
+    # GPU | Device
+    cuda = 0
+    device = torch.device(f"cuda:{cuda}" if torch.cuda.is_available() and cuda >= 0 else "cpu")
+    # general config CL experiment
+    # TODO: use args or make a class in utils_config!
+    # https://github.com/ContinualAI/reproducible-continual-learning/blob/main/strategies/iCARL/experiment.py
 
     "Fashion - Scenario and Benchmarck"
     # data loader (TR)
@@ -55,8 +58,26 @@ def main():
 
     "Fashion - build model"
     # build model
-    model = build_predictor(model_cfg.model)
+    model = GlobalCatePredictorFashion(num_classes=scenario.n_classes, pretrained='checkpoint/vgg16.pth') #
     print('model built')
+
+    "Fashion - build the Evaluation plugin (Avalanche)"
+    # print to stdout
+    interactive_logger = InteractiveLogger()
+    # TODO: Tensorboard Logger!
+    eval_plugin = EvaluationPlugin(
+        accuracy_metrics(epoch=True, experience=True, stream=True),
+        timing_metrics(epoch=True, experience=True),
+        loggers=[interactive_logger]
+    )
+
+    " Fashion - CREATE THE STRATEGY INSTANCE (Replay)"
+    cl_strategy = Replay(
+        model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
+        CrossEntropyLoss(), mem_size=500, device=device, train_mb_size=128, train_epochs=1, eval_mb_size=64,
+        evaluator=eval_plugin)
+    #total_epochs = 50
+    #work_dir = 'checkpoint/CateAttrPredict/vgg/global'
 
     # Print for dataset and benchmark test (DEBUG)
     print("Tot len train DT: ", len(train_dataset))
@@ -87,7 +108,28 @@ def main():
 
     # Print Model test (DEBUG)
     print(model)
+    print()
 
+    # Print CL strategy (DEBUG)
+    print(cl_strategy)
+    print()
+
+    "Fashion - TRAINING LOOP"
+    print('Starting experiment...')
+    results = []
+    for experience in scenario.train_stream:
+        print("Start of experience: ", experience.current_experience)
+        print("Current Classes: ", experience.classes_in_this_experience)
+
+        # train returns a dictionary which contains all the metric values
+        res = cl_strategy.train(experience, num_workers=4)
+        print('Training completed')
+
+        print('Computing accuracy on the whole test set')
+        # eval also returns a dictionary which contains all the metric values
+        results.append(cl_strategy.eval(scenario.test_stream, num_workers=4))
+
+    print("Final results= ", results)
 
 
 """

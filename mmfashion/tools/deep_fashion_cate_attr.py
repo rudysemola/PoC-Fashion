@@ -1,3 +1,8 @@
+"""
+ DeepFashion - pytorch dataset
+ # TODO: refactoring | only for Category task (for other task create a new  DeepFashion - pytorch dataset)
+"""
+
 from __future__ import division
 import os
 from typing import List
@@ -23,7 +28,6 @@ class DeepFashion(Dataset):
                  bbox_file,
                  landmark_file,
                  img_size,
-                 label_type='cate',
                  idx2id=None):
         self.img_path = img_path
 
@@ -35,9 +39,6 @@ class DeepFashion(Dataset):
             transforms.ToTensor(),
             normalize,
         ])
-
-        # setup label type
-        self.label_type = label_type
 
         # read img names
         fp = open(img_file, 'r')
@@ -92,17 +93,13 @@ class DeepFashion(Dataset):
         cate = torch.LongTensor([int(self.targets[idx]) - 1])  #
         cate = torch.LongTensor(cate[0])
 
-        data = {'img': img, 'attr': attribute, 'cate': cate}
+        # data = {'img': img, 'attr': attribute, 'cate': cate}
+        data = {'img': img, 'cate': cate}
         return data
 
     def __getitem__(self, idx):
         data = self.get_basic_item(idx)
-        if self.label_type == 'cate':
-            return data['img'], data['cate']
-        elif self.label_type == 'attr':
-            return data['img'], data['attr']
-        elif self.label_type == 'cate_attr':
-            pass  # TODO
+        return data['img'], self.targets[idx]
 
     def __len__(self):
         return len(self.img_list)
