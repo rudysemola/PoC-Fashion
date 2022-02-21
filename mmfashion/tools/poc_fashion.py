@@ -108,6 +108,7 @@ def main():
 
     # Print Model test (DEBUG)
     print(model)
+    print("scenario.n_classes= ", scenario.n_classes)
     print()
 
     # Print CL strategy (DEBUG)
