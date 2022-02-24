@@ -58,7 +58,7 @@ def main():
 
     "Fashion - build model"
     # build model
-    model = GlobalCatePredictorFashion(num_classes=scenario.n_classes, pretrained='checkpoint/vgg16.pth') #
+    model = GlobalCatePredictorFashion(num_classes=50, pretrained='checkpoint/vgg16.pth') #
     print('model built')
 
     "Fashion - build the Evaluation plugin (Avalanche)"
@@ -106,14 +106,18 @@ def main():
         print("Current Classes: ", experience_val.classes_in_this_experience)
         print()
 
+    print("target example: ", train_dataset[1][1])
+    print("Inference model: ", model(train_dataset[1][0].unsqueeze(0)).shape)
+    print("Inference model: ", model(train_dataset[1][0].unsqueeze(0)).squeeze())
+
     # Print Model test (DEBUG)
-    print(model)
-    print("scenario.n_classes= ", scenario.n_classes)
-    print()
+    #print(model)
+    #print("scenario.n_classes= ", scenario.n_classes)
+    #print()
 
     # Print CL strategy (DEBUG)
-    print(cl_strategy)
-    print()
+    #print(cl_strategy)
+    #print()
 
     "Fashion - TRAINING LOOP"
     print('Starting experiment...')
@@ -131,6 +135,7 @@ def main():
         results.append(cl_strategy.eval(scenario.test_stream, num_workers=4))
 
     print("Final results= ", results)
+
 
 
 """

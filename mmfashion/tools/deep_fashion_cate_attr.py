@@ -89,6 +89,7 @@ class DeepFashion(Dataset):
         img.thumbnail(self.img_size, Image.ANTIALIAS)
         img = self.transform(img)
 
+        # Target for Cate or Attribute task
         attribute = torch.from_numpy(self.labels[idx])
         cate = torch.LongTensor([int(self.targets[idx]) - 1])  #
         cate = torch.LongTensor(cate[0])
@@ -99,7 +100,8 @@ class DeepFashion(Dataset):
 
     def __getitem__(self, idx):
         data = self.get_basic_item(idx)
-        return data['img'], self.targets[idx]
+        #return data['img'], self.targets[idx]
+        return data['img'], data['cate'] #
 
     def __len__(self):
         return len(self.img_list)
