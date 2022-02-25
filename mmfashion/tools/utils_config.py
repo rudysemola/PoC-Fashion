@@ -23,6 +23,16 @@ class DataSetting():
     def __init__(self, img_size, dataset_type, data_root):
         self.imgs_per_gpu = 128
         self.workers_per_gpu = 4
+        #self.train = dict(
+        #    type=dataset_type,
+        #    img_path=os.path.join(data_root, 'Img'),
+        #    img_file=os.path.join(data_root, 'Anno_fine/train.txt'),
+        #    label_file=os.path.join(data_root, 'Anno_fine/train_attr.txt'), # Target label for Attribute prediction task
+        #    cate_file=os.path.join(data_root, 'Anno_fine/train_cate.txt'), # Target label for Category prediction task
+        #    bbox_file=os.path.join(data_root, 'Anno_fine/train_bbox.txt'),
+        #    landmark_file=os.path.join(data_root, 'Anno_fine/train_landmarks.txt'),
+        #    img_size=img_size)
+        # TODO: change the dir to obtain more number of pattern!
         self.train = dict(
             type=dataset_type,
             img_path=os.path.join(data_root, 'Img'),
