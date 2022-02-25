@@ -74,9 +74,12 @@ def main():
     )
 
     " Fashion - CREATE THE STRATEGY INSTANCE (Replay)"
-    cl_strategy = Replay(
-        model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
-        CrossEntropyLoss(), mem_size=500, device=device, train_mb_size=128, train_epochs=1, eval_mb_size=64,
+    #cl_strategy = Replay(
+    #    model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
+    #    CrossEntropyLoss(), mem_size=500, device=device, train_mb_size=128, train_epochs=1, eval_mb_size=64,
+    #    evaluator=eval_plugin)
+    cl_strategy = Cumulative(model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
+        CrossEntropyLoss(), device=device, train_mb_size=128, train_epochs=1, eval_mb_size=64,
         evaluator=eval_plugin)
     #total_epochs = 50
     #work_dir = 'checkpoint/CateAttrPredict/vgg/global'
@@ -124,12 +127,14 @@ def main():
     "Fashion - TRAINING LOOP"
     print('Starting experiment...')
     results = []
+    res = []
     for experience in scenario.train_stream:
         print("Start of experience: ", experience.current_experience)
+        print("Number of  Pattern: ", len(experience.dataset))
         print("Current Classes: ", experience.classes_in_this_experience)
 
         # train returns a dictionary which contains all the metric values
-        res = cl_strategy.train(experience, num_workers=4)
+        res.append(cl_strategy.train(experience, num_workers=4))
         print('Training completed')
 
         print('Computing accuracy on the whole test set')
