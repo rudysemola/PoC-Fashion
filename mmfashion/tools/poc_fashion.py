@@ -66,8 +66,10 @@ def main():
     interactive_logger = InteractiveLogger()
     # TODO: Tensorboard Logger!
     eval_plugin = EvaluationPlugin(
-        accuracy_metrics(epoch=True, experience=True, stream=True),
-        timing_metrics(epoch=True, experience=True),
+        #accuracy_metrics(epoch=True, experience=True, stream=True),
+        accuracy_metrics(experience=True, stream=True),
+        #timing_metrics(epoch=True, experience=True),
+        timing_metrics(experience=True),
         loggers=[interactive_logger]
     )
 
@@ -134,7 +136,10 @@ def main():
         # eval also returns a dictionary which contains all the metric values
         results.append(cl_strategy.eval(scenario.test_stream, num_workers=4))
 
-    print("Final results= ", results)
+    print("Final Results eval:")
+    print(results, "\n")
+    print("Final Results TR= ")
+    print(res)
 
 
 
