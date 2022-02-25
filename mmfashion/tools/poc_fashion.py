@@ -13,7 +13,7 @@ from avalanche.benchmarks.generators import nc_benchmark
 from avalanche.evaluation.metrics import accuracy_metrics, timing_metrics
 from avalanche.logging import InteractiveLogger
 from avalanche.training.plugins import EvaluationPlugin
-from avalanche.training.strategies import Cumulative, Replay
+from avalanche.training.strategies import Cumulative, Replay, JointTraining
 
 "Pytorch import"
 import torch
@@ -78,9 +78,13 @@ def main():
     #    model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
     #    CrossEntropyLoss(), mem_size=500, device=device, train_mb_size=128, train_epochs=1, eval_mb_size=64,
     #    evaluator=eval_plugin)
-    cl_strategy = Cumulative(model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
-        CrossEntropyLoss(), device=device, train_mb_size=128, train_epochs=1, eval_mb_size=64,
-        evaluator=eval_plugin)
+    #cl_strategy = Cumulative(model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
+    #    CrossEntropyLoss(), device=device, train_mb_size=128, train_epochs=1, eval_mb_size=64,
+    #    evaluator=eval_plugin)
+    cl_strategy = JointTraining(model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
+                             CrossEntropyLoss(), device=device, train_mb_size=128, train_epochs=1, eval_mb_size=64,
+                             evaluator=eval_plugin)
+    scenario = nc_benchmark(train_dataset, val_dataset, n_experiences=1, shuffle=True, seed=1234, task_labels=False)
     #total_epochs = 50
     #work_dir = 'checkpoint/CateAttrPredict/vgg/global'
 
