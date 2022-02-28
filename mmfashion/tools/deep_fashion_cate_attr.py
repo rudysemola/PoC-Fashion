@@ -1,13 +1,12 @@
 """
  DeepFashion - pytorch dataset
- # TODO: refactoring | only for Category task (for other task create a new  DeepFashion - pytorch dataset)
+ Category prediction
 """
 
 from __future__ import division
 import os
 from typing import List
 
-import numpy as np
 import torch
 import torch.nn.parallel
 import torch.optim
@@ -22,15 +21,13 @@ class DeepFashion(Dataset):
 
     def __init__(self,
                  img_path,
-                 img_file,
-                 label_file,
-                 cate_file,
-                 bbox_file,
-                 landmark_file,
-                 img_size,
-                 idx2id=None):
+                 img_cate_file,
+                 img_bbox_file,
+                 img_size):
+        # general img path
         self.img_path = img_path
 
+        # Pytorch transforms
         normalize = transforms.Normalize(
             mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         self.transform = transforms.Compose([
@@ -40,34 +37,35 @@ class DeepFashion(Dataset):
             normalize,
         ])
 
-        # read img names
-        fp = open(img_file, 'r')
-        self.img_list = [x.strip() for x in fp]
-
-        # read attribute labels and category annotations
-        self.labels = np.loadtxt(label_file, dtype=np.float32)
-
-        # read categories # self.targets: List[int] = []
-        self.targets: List[int] = []
-        catefn = open(cate_file).readlines()
-        for i, line in enumerate(catefn):
-            self.targets.append(int(line.strip('\n')))
+        # from img-cate txt to list
+        fp = open(img_cate_file, 'r')
+        list_img_cate_file = [x.strip() for x in fp]
+        #
+        self.img_list: List[str] = [] # img list
+        self.targets: List[int] = [] # cate label list
+        for i, line in enumerate(list_img_cate_file):
+            if i > 1:
+                tmp_line = line.split()
+                self.img_lis.append(tmp_line[0])
+                self.targets.append(int(tmp_line[1]))
 
         self.img_size = img_size
 
         # load bbox
-        if bbox_file:
+        if img_bbox_file:
             self.with_bbox = True
-            self.bboxes = np.loadtxt(bbox_file, usecols=(0, 1, 2, 3))
+            # from img-bbox txt to list
+            fp = open(img_bbox_file, 'r')
+            list_img_bbox_file = [x.strip() for x in fp]
+            #
+            self.bboxes: List[list] = []
+            for i, line in enumerate(list_img_bbox_file):
+                if i > 1:
+                    tmp_line = line.split()
+                    self.bboxes.append([int(tmp_line[1]), int(tmp_line[2]), int(tmp_line[3]), int(tmp_line[4])])
         else:
             self.with_bbox = False
             self.bboxes = None
-
-        # load landmarks
-        if landmark_file:
-            self.landmarks = np.loadtxt(landmark_file)
-        else:
-            self.landmarks = None
 
     def get_basic_item(self, idx):
         img = Image.open(os.path.join(self.img_path,
@@ -89,18 +87,15 @@ class DeepFashion(Dataset):
         img.thumbnail(self.img_size, Image.ANTIALIAS)
         img = self.transform(img)
 
-        # Target for Cate or Attribute task
-        attribute = torch.from_numpy(self.labels[idx])
+        # Target for Cate task
         cate = torch.LongTensor([int(self.targets[idx]) - 1])  #
         cate = torch.LongTensor(cate[0])
 
-        # data = {'img': img, 'attr': attribute, 'cate': cate}
         data = {'img': img, 'cate': cate}
         return data
 
     def __getitem__(self, idx):
         data = self.get_basic_item(idx)
-        #return data['img'], self.targets[idx]
         return data['img'], data['cate'] #
 
     def __len__(self):
