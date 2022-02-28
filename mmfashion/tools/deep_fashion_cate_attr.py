@@ -46,7 +46,7 @@ class DeepFashion(Dataset):
         for i, line in enumerate(list_img_cate_file):
             if i > 1:
                 tmp_line = line.split()
-                self.img_lis.append(tmp_line[0])
+                self.img_list.append(tmp_line[0])
                 self.targets.append(int(tmp_line[1]))
 
         self.img_size = img_size

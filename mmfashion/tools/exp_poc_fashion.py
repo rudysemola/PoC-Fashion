@@ -66,6 +66,7 @@ def main():
     print("TR len= ", len(train_dataset))
     print("VAL len= ", len(val_dataset))
     print("target TR example: ", train_dataset[1][1])
+    print("img TR example: ", train_dataset[1][0])
     print("target VAL example: ", val_dataset[1][1])
 
     "Fashion - TRAINING LOOP"
