@@ -48,7 +48,6 @@ def main():
     train_size = dataset_size - val_size
     train_dataset, val_dataset = torch.utils.data.random_split(dataset, [train_size, val_size])
     print('dataset splitted')
-
     # build Benchmarks - Use nc_benchmark to setup the scenario and benchmark
     # TODO
 
