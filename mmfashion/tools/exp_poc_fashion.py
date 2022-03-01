@@ -20,7 +20,7 @@ from torch.nn import CrossEntropyLoss
 
 "Python Files"
 from deep_fashion_cate_attr import DeepFashion
-from utils_config import DatasetSetting
+from utils_config import DatasetSetting, Timer
 from global_cate_fashion_predictor import GlobalCatePredictorFashion
 
 
@@ -29,6 +29,8 @@ Function main
 """
 def main():
     "Configs"
+    # TIME
+    timer = Timer()
     # dataset
     data_cfg = DatasetSetting()
     # GPU | Device
@@ -50,7 +52,7 @@ def main():
     train_dataset, val_dataset = torch.utils.data.random_split(dataset, [train_size, val_size])
     print('dataset splitted')
     # build Benchmarks - Use nc_benchmark to setup the scenario and benchmark
-    scenario = nc_benchmark(train_dataset, val_dataset, n_experiences=10, shuffle=True, seed=10, task_labels=False, per_exp_classes={0:10})
+    scenario = nc_benchmark(train_dataset, val_dataset, n_experiences=10, shuffle=True, seed=50, task_labels=False, per_exp_classes={0:10})
 
     "Fashion - build model"
     model = GlobalCatePredictorFashion(num_classes=50, pretrained='checkpoint/vgg16.pth')  #
@@ -113,6 +115,7 @@ def main():
         print()
     """
 
+
     "Fashion - TRAINING LOOP"
     print('Starting experiment...')
     results = []
@@ -123,7 +126,9 @@ def main():
         print("Current Classes: ", experience.classes_in_this_experience)
 
         # train returns a dictionary which contains all the metric values
+        timer.start() #
         res.append(cl_strategy.train(experience, num_workers=4))
+        timer.stop(experience.current_experience) #
         print('Training completed')
 
         print('Computing accuracy on the whole test set')
@@ -132,7 +137,7 @@ def main():
 
     print("Final Results eval:")
     print(results, "\n")
-    print("Final Results TR= ")
+    print("Final Results TR= ", timer.time)
     print(res)
 
 
