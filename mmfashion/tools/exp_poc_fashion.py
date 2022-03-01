@@ -72,13 +72,13 @@ def main():
     #    model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
     #    CrossEntropyLoss(), mem_size=500, device=device, train_mb_size=128, train_epochs=1, eval_mb_size=64,
     #    evaluator=eval_plugin)
-    # cl_strategy = Cumulative(model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
-    #    CrossEntropyLoss(), device=device, train_mb_size=128, train_epochs=1, eval_mb_size=64,
-    #    evaluator=eval_plugin)
-    cl_strategy = JointTraining(model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
-                                CrossEntropyLoss(), device=device, train_mb_size=128, train_epochs=1, eval_mb_size=64,
-                                evaluator=eval_plugin)
-    scenario = nc_benchmark(train_dataset, val_dataset, n_experiences=1, shuffle=True, seed=10, task_labels=False)
+    cl_strategy = Cumulative(model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
+        CrossEntropyLoss(), device=device, train_mb_size=128, train_epochs=1, eval_mb_size=64,
+        evaluator=eval_plugin)
+    #cl_strategy = JointTraining(model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
+    #                           CrossEntropyLoss(), device=device, train_mb_size=128, train_epochs=1, eval_mb_size=64,
+    #                            evaluator=eval_plugin)
+    #scenario = nc_benchmark(train_dataset, val_dataset, n_experiences=1, shuffle=True, seed=10, task_labels=False)
 
     "Print (DEBUG)"
     """
@@ -135,10 +135,11 @@ def main():
         # eval also returns a dictionary which contains all the metric values
         results.append(cl_strategy.eval(scenario.test_stream, num_workers=4))
 
+    print()
     print("Final Results eval:")
     print(results, "\n")
-    print("Final Results TR= ", timer.time)
-    print(res)
+    print("Final Results TR= ")
+    print(timer.time)
 
 
 
