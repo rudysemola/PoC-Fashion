@@ -68,13 +68,13 @@ def main():
     )
 
     " Fashion - CREATE THE STRATEGY INSTANCE (Replay)" # total_epochs = 50
-    # cl_strategy = Replay(
-    #    model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
-    #    CrossEntropyLoss(), mem_size=500, device=device, train_mb_size=128, train_epochs=1, eval_mb_size=64,
-    #    evaluator=eval_plugin)
-    cl_strategy = Cumulative(model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
-        CrossEntropyLoss(), device=device, train_mb_size=128, train_epochs=1, eval_mb_size=64,
+    cl_strategy = Replay(
+        model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
+        CrossEntropyLoss(), mem_size=2000, device=device, train_mb_size=128, train_epochs=1, eval_mb_size=64,
         evaluator=eval_plugin)
+    #cl_strategy = Cumulative(model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
+    #    CrossEntropyLoss(), device=device, train_mb_size=128, train_epochs=1, eval_mb_size=64,
+    #    evaluator=eval_plugin)
     #cl_strategy = JointTraining(model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
     #                           CrossEntropyLoss(), device=device, train_mb_size=128, train_epochs=1, eval_mb_size=64,
     #                            evaluator=eval_plugin)
