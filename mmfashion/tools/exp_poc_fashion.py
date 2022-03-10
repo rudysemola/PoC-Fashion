@@ -22,6 +22,7 @@ from torch.nn import CrossEntropyLoss
 from deep_fashion_cate_attr import DeepFashion
 from utils_config import DatasetSetting, Timer
 from global_cate_fashion_predictor import GlobalCatePredictorFashion
+from topk_acc import *
 
 
 """
@@ -34,6 +35,7 @@ def main():
     # dataset
     data_cfg = DatasetSetting()
     # GPU | Device
+    ## (if multi-GPU -> 0 is Replay | 1 is Cumulative)
     cuda = 0
     device = torch.device(f"cuda:{cuda}" if torch.cuda.is_available() and cuda >= 0 else "cpu")
     # general config CL experiment
@@ -62,59 +64,30 @@ def main():
     interactive_logger = InteractiveLogger()
     # TODO: Tensorboard Logger!
     eval_plugin = EvaluationPlugin(
+        # TODO: TEST metrics 1 (return a metrics - see schema...)
+        topk_acc_metrics(top_k=5, experience=True, stream=True),
         accuracy_metrics(experience=True, stream=True),
-        #timing_metrics(experience=True),
+        #accuracy_metrics(epoch=True, experience=True, stream=True), # !!! ONLY FOR JOINT TR !!! epoch=True
         loggers=[interactive_logger]
     )
 
     " Fashion - CREATE THE STRATEGY INSTANCE (Replay)" # total_epochs = 50
-    #cl_strategy = Replay(
-    #    model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
-    #    CrossEntropyLoss(), mem_size=3000, device=device, train_mb_size=128, train_epochs=1, eval_mb_size=64,
-    #    evaluator=eval_plugin)
+    # TODO: TEST metrics 2
+    cl_strategy = Replay(
+        model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
+        CrossEntropyLoss(), mem_size=10000, device=device, train_mb_size=128, train_epochs=1, eval_mb_size=64,
+        evaluator=eval_plugin)
     #cl_strategy = Cumulative(model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
-    #    CrossEntropyLoss(), device=device, train_mb_size=128, train_epochs=1, eval_mb_size=64,
+    #    CrossEntropyLoss(), device=device, train_mb_size=128, train_epochs=30, eval_mb_size=64,
     #    evaluator=eval_plugin)
-    cl_strategy = JointTraining(model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
-                               CrossEntropyLoss(), device=device, train_mb_size=128, train_epochs=5, eval_mb_size=64,
-                                evaluator=eval_plugin)
-    scenario = nc_benchmark(train_dataset, val_dataset, n_experiences=1, shuffle=True, seed=50, task_labels=False)
+    #cl_strategy = JointTraining(model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
+    #                           CrossEntropyLoss(), device=device, train_mb_size=128, train_epochs=40, eval_mb_size=64,
+    #                            evaluator=eval_plugin)
+    #scenario = nc_benchmark(train_dataset, val_dataset, n_experiences=1, shuffle=True, seed=50, task_labels=False)
 
     "Print (DEBUG)"
-    """
-    # Dataset
-    print('Dataset len= ', len(dataset))
-    print("TR len= ", len(train_dataset))
-    print("VAL len= ", len(val_dataset))
-    print("target TR example: ", train_dataset[1][1])
-    print("img TR example: ", train_dataset[1][0])
-    print("target VAL example: ", val_dataset[1][1])
-    print()
-    # Scenario
-    print("scenario: ", scenario)
-    train_stream = scenario.train_stream
-    val_stream = scenario.test_stream
-    print("train_stream: ", train_stream)
-    for experience in train_stream:
-        t = experience.task_label
-        exp_id = experience.current_experience
-        training_dataset = experience.dataset
-        print('Task {} batch {} -> train'.format(t, exp_id))
-        print('This batch contains', len(training_dataset), 'patterns')
-        print("No. Classes: ", len(experience.classes_in_this_experience))
-        print("Current Classes: ", experience.classes_in_this_experience)
-        print()
-    for experience_val in val_stream:
-        t = experience_val.task_label
-        exp_id = experience_val.current_experience
-        validation_dataset = experience_val.dataset
-        print('Task {} batch {} -> train'.format(t, exp_id))
-        print('This batch contains', len(validation_dataset), 'patterns')
-        print("No. Classes: ", len(experience_val.classes_in_this_experience))
-        print("Current Classes: ", experience_val.classes_in_this_experience)
-        print()
-    """
 
+    # TODO: (opz) test in inference (val-set) the metrics top-k in my code
 
     "Fashion - TRAINING LOOP"
     print('Starting experiment...')
@@ -140,6 +113,7 @@ def main():
     print(results, "\n")
     print("Final Results TR= ")
     print(timer.time)
+    print("GPU n. ", cuda)
 
 
 
