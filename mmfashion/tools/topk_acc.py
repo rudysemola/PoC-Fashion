@@ -185,6 +185,35 @@ class ExperienceTopkAccuracy(TopkAccuracyPluginMetric):
         return "Topk_"+str(self.top_k)+"_Acc_Exp"
 
 
+class TrainedExperienceTopkAccuracy(TopkAccuracyPluginMetric):
+    """
+    """
+
+    def __init__(self, top_k):
+        """
+        """
+        super(TrainedExperienceTopkAccuracy, self).__init__(
+            reset_at="stream", emit_at="stream", mode="eval", top_k=top_k
+        )
+        self._current_experience = 0
+        self.top_k = top_k
+
+    def after_training_exp(self, strategy) -> None:
+        self._current_experience = strategy.experience.current_experience
+        # Reset average after learning from a new experience
+        TopkAccuracyPluginMetric.reset(self, strategy)
+        return TopkAccuracyPluginMetric.after_training_exp(self, strategy)
+
+    def update(self, strategy):
+        """
+        """
+        if strategy.experience.current_experience <= self._current_experience:
+            TopkAccuracyPluginMetric.update(self, strategy)
+
+    def __str__(self):
+        return "Topk_"+str(self.top_k)+"_Acc_On_Trained_Experiences"
+
+
 class StreamTopkAccuracy(TopkAccuracyPluginMetric):
     """
     """
@@ -209,6 +238,7 @@ def topk_acc_metrics(
     epoch=False,
     epoch_running=False,
     experience=False,
+    trained_experience=False,
     stream=False,
 ) -> List[PluginMetric]:
     """
@@ -217,16 +247,14 @@ def topk_acc_metrics(
     metrics = []
     if minibatch:
         metrics.append(MinibatchTopkAccuracy(top_k=top_k))
-
     if epoch:
         metrics.append(EpochTopkAccuracy(top_k=top_k))
-
     if epoch_running:
         metrics.append(RunningEpochTopkAccurac(top_k=top_k))
-
     if experience:
         metrics.append(ExperienceTopkAccuracy(top_k=top_k))
-
+    if trained_experience:
+        metrics.append(TrainedExperienceTopkAccuracy(top_k=top_k))
     if stream:
         metrics.append(StreamTopkAccuracy(top_k=top_k))
 
@@ -252,4 +280,5 @@ __all__ = [
 UNIT TEST
 """
 if __name__ == '__main__':
-    print(topk_acc_metrics(experience=True, stream=True, top_k=3))
+    metric = topk_acc_metrics(trained_experience=True, top_k=5)
+    print(metric)
