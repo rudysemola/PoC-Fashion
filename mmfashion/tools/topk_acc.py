@@ -32,7 +32,6 @@ class TopkAccuracy(Metric[float]):
         """
         """
         self._topk_acc_dict = defaultdict(Mean)
-        # self.topk_metrics = Accuracy(top_k=top_k)
         self.top_k = top_k
 
     @torch.no_grad()
@@ -129,9 +128,10 @@ class MinibatchTopkAccuracy(TopkAccuracyPluginMetric):
         super(MinibatchTopkAccuracy, self).__init__(
             reset_at="iteration", emit_at="iteration", mode="train", top_k=top_k
         )
+        self.top_k = top_k
 
     def __str__(self):
-        return "TopkAcc_MB"
+        return "Topk_"+str(self.top_k)+"_Acc_MB"
 
 
 class EpochTopkAccuracy(TopkAccuracyPluginMetric):
@@ -145,9 +145,10 @@ class EpochTopkAccuracy(TopkAccuracyPluginMetric):
         super(EpochTopkAccuracy, self).__init__(
             reset_at="epoch", emit_at="epoch", mode="train", top_k=top_k
         )
+        self.top_k = top_k
 
     def __str__(self):
-        return "TopkAcc_Epoch"
+        return "Topk_"+str(self.top_k)+"_Acc_Epoch"
 
 
 class RunningEpochTopkAccurac(TopkAccuracyPluginMetric):
@@ -162,9 +163,10 @@ class RunningEpochTopkAccurac(TopkAccuracyPluginMetric):
         super(RunningEpochTopkAccurac, self).__init__(
             reset_at="epoch", emit_at="iteration", mode="train", top_k=top_k
         )
+        self.top_k = top_k
 
     def __str__(self):
-        return "TopkAcc_Running_Epoch"
+        return "Topk_"+str(self.top_k)+"_Acc_Epoch"
 
 
 class ExperienceTopkAccuracy(TopkAccuracyPluginMetric):
@@ -177,9 +179,10 @@ class ExperienceTopkAccuracy(TopkAccuracyPluginMetric):
         super(ExperienceTopkAccuracy, self).__init__(
             reset_at="experience", emit_at="experience", mode="eval", top_k=top_k
         )
+        self.top_k = top_k
 
     def __str__(self):
-        return "TopkAcc_Exp"
+        return "Topk_"+str(self.top_k)+"_Acc_Exp"
 
 
 class StreamTopkAccuracy(TopkAccuracyPluginMetric):
@@ -193,9 +196,10 @@ class StreamTopkAccuracy(TopkAccuracyPluginMetric):
         super(StreamTopkAccuracy, self).__init__(
             reset_at="stream", emit_at="stream", mode="eval", top_k=top_k
         )
+        self.top_k = top_k
 
     def __str__(self):
-        return "TopkAcc_Stream"
+        return "Topk_"+str(self.top_k)+"_Acc_Stream"
 
 
 def topk_acc_metrics(
