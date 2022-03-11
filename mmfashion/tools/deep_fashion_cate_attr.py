@@ -1,7 +1,13 @@
-"""
- DeepFashion - pytorch dataset
- Category prediction
-"""
+################################################################################
+# Copyright (c) 2021 ContinualAI.                                              #
+# Copyrights licensed under the MIT License.                                   #
+# See the accompanying LICENSE file for terms.                                 #
+#                                                                              #
+# Date: 10-03-2022                                                             #
+# Author(s): Rudy Semola                                                       #
+# E-mail: contact@continualai.org                                              #
+# Website: www.continualai.org                                                 #
+################################################################################
 
 from __future__ import division
 import os
@@ -17,6 +23,11 @@ from torch.utils.data.dataset import Dataset
 
 
 class DeepFashion(Dataset):
+    """
+     DeepFashion - pytorch dataset
+     Category prediction
+    """
+
     CLASSES = None
 
     def __init__(self,
