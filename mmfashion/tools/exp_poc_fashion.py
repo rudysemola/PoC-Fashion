@@ -89,8 +89,8 @@ def main():
         )
     else:
         eval_plugin = EvaluationPlugin(
-            topk_acc_metrics(top_k=3, trained_experience=True, stream=True),
-            topk_acc_metrics(top_k=5, trained_experience=True, stream=True),
+            topk_acc_metrics(top_k=3, trained_experience=True),
+            topk_acc_metrics(top_k=5, trained_experience=True),
             loggers=[interactive_logger]
         )
 
