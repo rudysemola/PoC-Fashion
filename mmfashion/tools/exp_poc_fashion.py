@@ -8,7 +8,6 @@
 "Avalanche import"
 import avalanche
 from avalanche.benchmarks.generators import nc_benchmark
-from avalanche.evaluation.metrics import accuracy_metrics, timing_metrics
 from avalanche.logging import InteractiveLogger
 from avalanche.training.plugins import EvaluationPlugin
 from avalanche.training.strategies import Cumulative, Replay, JointTraining
@@ -48,7 +47,7 @@ def main():
     print('dataset loaded')
     # data split
     dataset_size = len(dataset)
-    val_size = int(0.2 * dataset_size)
+    val_size = int(0.3 * dataset_size)
     train_size = dataset_size - val_size
     torch.manual_seed(0)
     train_dataset, val_dataset = torch.utils.data.random_split(dataset, [train_size, val_size])
@@ -64,30 +63,27 @@ def main():
     interactive_logger = InteractiveLogger()
     # TODO: Tensorboard Logger!
     eval_plugin = EvaluationPlugin(
-        # TODO: TEST metrics 1 (return a metrics - see schema...)
-        topk_acc_metrics(top_k=5, experience=True, stream=True),
-        accuracy_metrics(experience=True, stream=True),
-        #accuracy_metrics(epoch=True, experience=True, stream=True), # !!! ONLY FOR JOINT TR !!! epoch=True
+        #topk_acc_metrics(top_k=3, experience=True, stream=True),
+        #topk_acc_metrics(top_k=5, experience=True, stream=True),
+        topk_acc_metrics(top_k=3, epoch=True, experience=True, stream=True), # JT
+        topk_acc_metrics(top_k=5, epoch=True, experience=True, stream=True), # JT
         loggers=[interactive_logger]
     )
 
     " Fashion - CREATE THE STRATEGY INSTANCE (Replay)" # total_epochs = 50
-    # TODO: TEST metrics 2
-    cl_strategy = Replay(
-        model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
-        CrossEntropyLoss(), mem_size=10000, device=device, train_mb_size=128, train_epochs=1, eval_mb_size=64,
-        evaluator=eval_plugin)
+    #cl_strategy = Replay(
+    #    model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
+    #    CrossEntropyLoss(), mem_size=10000, device=device, train_mb_size=128, train_epochs=1, eval_mb_size=64,
+    #    evaluator=eval_plugin)
     #cl_strategy = Cumulative(model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
     #    CrossEntropyLoss(), device=device, train_mb_size=128, train_epochs=30, eval_mb_size=64,
     #    evaluator=eval_plugin)
-    #cl_strategy = JointTraining(model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
-    #                           CrossEntropyLoss(), device=device, train_mb_size=128, train_epochs=40, eval_mb_size=64,
-    #                            evaluator=eval_plugin)
-    #scenario = nc_benchmark(train_dataset, val_dataset, n_experiences=1, shuffle=True, seed=50, task_labels=False)
+    cl_strategy = JointTraining(model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
+                               CrossEntropyLoss(), device=device, train_mb_size=128, train_epochs=1, eval_mb_size=64,
+                                evaluator=eval_plugin)
+    scenario = nc_benchmark(train_dataset, val_dataset, n_experiences=1, shuffle=True, seed=50, task_labels=False)
 
     "Print (DEBUG)"
-
-    # TODO: (opz) test in inference (val-set) the metrics top-k in my code
 
     "Fashion - TRAINING LOOP"
     print('Starting experiment...')
