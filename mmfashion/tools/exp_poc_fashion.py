@@ -83,14 +83,14 @@ def main():
     # TODO: Tensorboard Logger!
     if args.strategy == 'JT':
         eval_plugin = EvaluationPlugin(
-            topk_acc_metrics(top_k=3, epoch=True, experience=True, stream=True),
-            topk_acc_metrics(top_k=5, epoch=True, experience=True, stream=True),
+            topk_acc_metrics(top_k=3, epoch=True, experience=True),
+            topk_acc_metrics(top_k=5, epoch=True, experience=True),
             loggers=[interactive_logger]
         )
     else:
         eval_plugin = EvaluationPlugin(
-            topk_acc_metrics(top_k=3, experience=True, stream=True),
-            topk_acc_metrics(top_k=5, experience=True, stream=True),
+            topk_acc_metrics(top_k=3, trained_experience=True, stream=True),
+            topk_acc_metrics(top_k=5, trained_experience=True, stream=True),
             loggers=[interactive_logger]
         )
 
