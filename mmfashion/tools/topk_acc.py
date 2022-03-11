@@ -13,7 +13,8 @@ from typing import List, Union, Dict
 
 import torch
 from torch import Tensor
-from torchmetrics import Accuracy
+# from torchmetrics import Accuracy
+from torchmetrics.functional import accuracy
 
 from avalanche.evaluation import Metric, PluginMetric, GenericPluginMetric
 from avalanche.evaluation.metrics.mean import Mean
@@ -31,7 +32,8 @@ class TopkAccuracy(Metric[float]):
         """
         """
         self._topk_acc_dict = defaultdict(Mean)
-        self.topk_metrics = Accuracy(top_k=top_k)
+        # self.topk_metrics = Accuracy(top_k=top_k)
+        self.top_k = top_k
 
     @torch.no_grad()
     def update(
@@ -54,11 +56,11 @@ class TopkAccuracy(Metric[float]):
         if isinstance(task_labels, int):
             total_patterns = len(true_y)
             self._topk_acc_dict[task_labels].update(
-                self.topk_metrics(predicted_y, true_y), total_patterns
+                accuracy(predicted_y, true_y, top_k=self.top_k), total_patterns
             )
         elif isinstance(task_labels, Tensor):
             for pred, true, t in zip(predicted_y, true_y, task_labels):
-                self._topk_acc_dict[t.item()].update(self.topk_metrics(pred, true), 1)
+                self._topk_acc_dict[t.item()].update(accuracy(pred, true, top_k=self.top_k), 1)
         else:
             raise ValueError(
                 f"Task label type: {type(task_labels)}, "
