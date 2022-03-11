@@ -3,7 +3,8 @@
     Training (Avalanche) loop
 """
 
-"mmFashion import"
+"script import"
+import argparse
 
 "Avalanche import"
 import avalanche
@@ -25,21 +26,35 @@ from topk_acc import *
 
 
 """
+parse_args function
+"""
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description='PoC - Train a Fashion Category Predictor in DeepFashion')
+    parser.add_argument('--stretegy', help='strategy alg')
+    parser.add_argument('--epochs', help='number of epochs')
+    parser.add_argument('--cuda', help='in Multi-GPU choose che GPU', default=0)
+    parser.add_argument('--memory_size', help='CL Replay hyper-param', default=5000)
+    args = parser.parse_args()
+    return args
+
+
+"""
 Function main
 """
 def main():
-    "Configs"
+    "Configs & Parser"
+    # parser
+    args = parse_args()
     # TIME
     timer = Timer()
     # dataset
     data_cfg = DatasetSetting()
     # GPU | Device
     ## (if multi-GPU -> 0 is Replay | 1 is Cumulative)
-    cuda = 0
+    cuda = args.cuda
     device = torch.device(f"cuda:{cuda}" if torch.cuda.is_available() and cuda >= 0 else "cpu")
-    # general config CL experiment
-    # TODO: use args or make a class in utils_config!
-    # https://github.com/ContinualAI/reproducible-continual-learning/blob/main/strategies/iCARL/experiment.py
+
 
     "Fashion - Scenario and Benchmarck"
     # data loader (TR)
@@ -62,26 +77,37 @@ def main():
     "Fashion - build the Evaluation plugin (Avalanche)"
     interactive_logger = InteractiveLogger()
     # TODO: Tensorboard Logger!
-    eval_plugin = EvaluationPlugin(
-        #topk_acc_metrics(top_k=3, experience=True, stream=True),
-        #topk_acc_metrics(top_k=5, experience=True, stream=True),
-        topk_acc_metrics(top_k=3, epoch=True, experience=True, stream=True), # JT
-        topk_acc_metrics(top_k=5, epoch=True, experience=True, stream=True), # JT
-        loggers=[interactive_logger]
-    )
+    if args.stretegy == 'JT':
+        eval_plugin = EvaluationPlugin(
+            topk_acc_metrics(top_k=3, epoch=True, experience=True, stream=True),
+            topk_acc_metrics(top_k=5, epoch=True, experience=True, stream=True),
+            loggers=[interactive_logger]
+        )
+    else:
+        eval_plugin = EvaluationPlugin(
+            topk_acc_metrics(top_k=3, experience=True, stream=True),
+            topk_acc_metrics(top_k=5, experience=True, stream=True),
+            loggers=[interactive_logger]
+        )
 
-    " Fashion - CREATE THE STRATEGY INSTANCE (Replay)" # total_epochs = 50
-    #cl_strategy = Replay(
-    #    model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
-    #    CrossEntropyLoss(), mem_size=10000, device=device, train_mb_size=128, train_epochs=1, eval_mb_size=64,
-    #    evaluator=eval_plugin)
-    #cl_strategy = Cumulative(model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
-    #    CrossEntropyLoss(), device=device, train_mb_size=128, train_epochs=30, eval_mb_size=64,
-    #    evaluator=eval_plugin)
-    cl_strategy = JointTraining(model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
-                               CrossEntropyLoss(), device=device, train_mb_size=128, train_epochs=1, eval_mb_size=64,
-                                evaluator=eval_plugin)
-    scenario = nc_benchmark(train_dataset, val_dataset, n_experiences=1, shuffle=True, seed=50, task_labels=False)
+
+    " Fashion - CREATE THE STRATEGY INSTANCE (Replay)"
+    if args.strategy == "CL":
+        cl_strategy = Replay(
+            model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
+            CrossEntropyLoss(), mem_size=args.memory_size, device=device, train_mb_size=128, train_epochs=args.epochs, eval_mb_size=64,
+            evaluator=eval_plugin)
+    elif args.strategy == "Cum":
+        cl_strategy = Cumulative(model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
+            CrossEntropyLoss(), device=device, train_mb_size=128, train_epochs=args.epochs, eval_mb_size=64,
+            evaluator=eval_plugin)
+    elif args.strategy == "JT":
+        cl_strategy = JointTraining(model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
+                                   CrossEntropyLoss(), device=device, train_mb_size=128, train_epochs=args.epochs, eval_mb_size=64,
+                                    evaluator=eval_plugin)
+        scenario = nc_benchmark(train_dataset, val_dataset, n_experiences=1, shuffle=True, seed=50, task_labels=False)
+    else:
+        ValueError("args.strategy must be (JT) (Cum) or (CL)!")
 
     "Print (DEBUG)"
 
@@ -94,14 +120,12 @@ def main():
         print("Number of  Pattern: ", len(experience.dataset))
         print("Current Classes: ", experience.classes_in_this_experience)
 
-        # train returns a dictionary which contains all the metric values
         timer.start() #
         res.append(cl_strategy.train(experience, num_workers=4))
         timer.stop(experience.current_experience) #
         print('Training completed')
 
         print('Computing accuracy on the whole test set')
-        # eval also returns a dictionary which contains all the metric values
         results.append(cl_strategy.eval(scenario.test_stream, num_workers=4))
 
     print()
