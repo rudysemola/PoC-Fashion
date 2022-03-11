@@ -31,10 +31,10 @@ parse_args function
 def parse_args():
     parser = argparse.ArgumentParser(
         description='PoC - Train a Fashion Category Predictor in DeepFashion')
-    parser.add_argument('--stretegy', help='strategy alg')
+    parser.add_argument('--strategy', help='strategy alg')
     parser.add_argument('--epochs', help='number of epochs')
     parser.add_argument('--cuda', help='in Multi-GPU choose che GPU', default=0)
-    parser.add_argument('--memory_size', help='CL Replay hyper-param', default=5000)
+    parser.add_argument('--memory_size', help='CL Replay hyper-param', default=10000)
     args = parser.parse_args()
     return args
 
@@ -52,8 +52,12 @@ def main():
     data_cfg = DatasetSetting()
     # GPU | Device
     ## (if multi-GPU -> 0 is Replay | 1 is Cumulative)
-    cuda = args.cuda
+    cuda = int(args.cuda)
     device = torch.device(f"cuda:{cuda}" if torch.cuda.is_available() and cuda >= 0 else "cpu")
+    # epochs
+    epochs = int(args.epochs)
+    # memory_size
+    memory_size = int(args.memory_size)
 
 
     "Fashion - Scenario and Benchmarck"
@@ -77,7 +81,7 @@ def main():
     "Fashion - build the Evaluation plugin (Avalanche)"
     interactive_logger = InteractiveLogger()
     # TODO: Tensorboard Logger!
-    if args.stretegy == 'JT':
+    if args.strategy == 'JT':
         eval_plugin = EvaluationPlugin(
             topk_acc_metrics(top_k=3, epoch=True, experience=True, stream=True),
             topk_acc_metrics(top_k=5, epoch=True, experience=True, stream=True),
@@ -95,15 +99,15 @@ def main():
     if args.strategy == "CL":
         cl_strategy = Replay(
             model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
-            CrossEntropyLoss(), mem_size=args.memory_size, device=device, train_mb_size=128, train_epochs=args.epochs, eval_mb_size=64,
+            CrossEntropyLoss(), mem_size=memory_size, device=device, train_mb_size=128, train_epochs=epochs, eval_mb_size=64,
             evaluator=eval_plugin)
     elif args.strategy == "Cum":
         cl_strategy = Cumulative(model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
-            CrossEntropyLoss(), device=device, train_mb_size=128, train_epochs=args.epochs, eval_mb_size=64,
+            CrossEntropyLoss(), device=device, train_mb_size=128, train_epochs=epochs, eval_mb_size=64,
             evaluator=eval_plugin)
     elif args.strategy == "JT":
         cl_strategy = JointTraining(model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
-                                   CrossEntropyLoss(), device=device, train_mb_size=128, train_epochs=args.epochs, eval_mb_size=64,
+                                   CrossEntropyLoss(), device=device, train_mb_size=128, train_epochs=epochs, eval_mb_size=64,
                                     evaluator=eval_plugin)
         scenario = nc_benchmark(train_dataset, val_dataset, n_experiences=1, shuffle=True, seed=50, task_labels=False)
     else:
