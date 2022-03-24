@@ -1,13 +1,15 @@
 import torch.nn as nn
 import torch
-from mmfashion.models.backbones.vgg import Vgg
-from mmfashion.models.global_pool.global_pool import GlobalPooling
+#from mmfashion.models.backbones.vgg import Vgg
+#from mmfashion.models.global_pool.global_pool import GlobalPooling
+from vgg import Vgg
+from global_pool import GlobalPooling
 
 
-"""
-
-"""
 class GlobalCatePredictorFashion(nn.Module):
+    """
+
+    """
 
     def __init__(self, num_classes=50, pretrained=None):
         super(GlobalCatePredictorFashion, self).__init__()
