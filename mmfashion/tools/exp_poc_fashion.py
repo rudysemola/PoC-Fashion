@@ -7,11 +7,13 @@
 import argparse
 
 "Avalanche import"
+
 import avalanche
 from avalanche.benchmarks.generators import nc_benchmark
 from avalanche.logging import InteractiveLogger
 from avalanche.training.plugins import EvaluationPlugin
 from avalanche.training.strategies import Cumulative, Replay, JointTraining
+
 
 "Pytorch import"
 import torch
@@ -77,6 +79,7 @@ def main():
     "Fashion - build model"
     model = GlobalCatePredictorFashion(num_classes=50, pretrained='checkpoint/vgg16.pth')  #
     print('model built')
+
 
     "Fashion - build the Evaluation plugin (Avalanche)"
     interactive_logger = InteractiveLogger()
