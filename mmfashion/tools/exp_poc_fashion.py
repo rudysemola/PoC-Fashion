@@ -12,7 +12,7 @@ import avalanche
 from avalanche.benchmarks.generators import nc_benchmark
 from avalanche.logging import InteractiveLogger
 from avalanche.training.plugins import EvaluationPlugin
-from avalanche.training.strategies import Cumulative, Replay, JointTraining
+from avalanche.training.supervised import Cumulative, Replay, JointTraining
 
 
 "Pytorch import"
