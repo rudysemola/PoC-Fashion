@@ -7,14 +7,12 @@
 import argparse
 
 "Avalanche import"
-
 from avalanche.benchmarks.classic import CORe50
-from avalanche.benchmarks.datasets import CORe50Dataset
 from avalanche.evaluation.metrics import accuracy_metrics
 from avalanche.models import MobilenetV1
 from avalanche.logging import InteractiveLogger
 from avalanche.training.plugins import EvaluationPlugin
-from avalanche.training.supervised import Cumulative, Replay, JointTraining
+from avalanche.training.supervised import Cumulative, Replay
 
 
 "Pytorch import"
@@ -69,18 +67,11 @@ def main():
     "Fashion - build the Evaluation plugin (Avalanche)"
     interactive_logger = InteractiveLogger()
     # TODO: Tensorboard Logger!
-    if args.strategy == 'JT':
-        eval_plugin = EvaluationPlugin(
-            accuracy_metrics(epoch=True, experience=True),
-            accuracy_metrics(epoch=True, experience=True),
-            loggers=[interactive_logger]
-        )
-    else:
-        eval_plugin = EvaluationPlugin(
-            accuracy_metrics(trained_experience=True),
-            accuracy_metrics(trained_experience=True),
-            loggers=[interactive_logger]
-        )
+    eval_plugin = EvaluationPlugin(
+        accuracy_metrics(trained_experience=True),
+        accuracy_metrics(trained_experience=True),
+        loggers=[interactive_logger]
+    )
 
 
     " Fashion - CREATE THE STRATEGY INSTANCE (Replay)"
@@ -93,11 +84,6 @@ def main():
         cl_strategy = Cumulative(model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
             CrossEntropyLoss(), device=device, train_mb_size=128, train_epochs=epochs, eval_mb_size=64,
             evaluator=eval_plugin)
-    elif args.strategy == "JT":
-        cl_strategy = JointTraining(model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
-                                   CrossEntropyLoss(), device=device, train_mb_size=128, train_epochs=epochs, eval_mb_size=64,
-                                    evaluator=eval_plugin)
-        scenario = CORe50Dataset()
     else:
         ValueError("args.strategy must be (JT) (Cum) or (CL)!")
 
