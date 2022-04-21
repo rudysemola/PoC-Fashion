@@ -58,8 +58,6 @@ def main():
 
     "CORE50 - Scenario and Benchmarck"
     scenario_list = [CORe50(scenario="nc", run=0), CORe50(scenario="nc", run=1), CORe50(scenario="nc", run=2)]
-    #DEGUG
-    print(scenario_list)
 
     "Fashion - build model"
     model = MobilenetV1(pretrained=True, latent_layer_num=20)
@@ -93,13 +91,15 @@ def main():
 
     "CORE50 - TRAINING LOOP"
     print('Starting experiment...')
-    results_list = [] # list of dict/list
-    time_list = [] # list of dict
+    # list of dict/list to collect data
+    results_list = []
+    time_list = []
     for scenario in scenario_list:
         print("\n New RUN \n")
         results = []
         res = []
-        timer.time = {} # reset time
+        timer.time = {} # reset time!
+
         for experience in scenario.train_stream:
             print("Start of experience: ", experience.current_experience)
             print("Number of  Pattern: ", len(experience.dataset))
@@ -113,14 +113,14 @@ def main():
             print('Computing accuracy on the whole test set')
             results.append(cl_strategy.eval(scenario.test_stream, num_workers=4))
 
-        # Collect al the data
+        # Collect all the data
         results_list.append(results)
         time_list.append(timer.time)
 
     print()
     print("Final Results over 3 runs Eval:", results_list)
     print("Final Results over 3 run TR= ", time_list)
-    print("GPU n. ", cuda)
+    print("CORE50 - GPU n. ", cuda)
 
 
 """
