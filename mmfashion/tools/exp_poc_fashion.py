@@ -151,6 +151,7 @@ def main():
 
     print()
     print("Final Results over 3 runs Eval:", results_list)
+    print()
     print("Final Results over 3 run TR= ", time_list)
     print("DeepFashion - GPU n. ", cuda)
 
