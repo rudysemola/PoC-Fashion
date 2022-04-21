@@ -74,9 +74,9 @@ def main():
     train_dataset, val_dataset = torch.utils.data.random_split(dataset, [train_size, val_size])
     print('dataset splitted')
     # build Benchmarks over 3 run - Use nc_benchmark to setup the scenario and benchmark
-    scenario1 = nc_benchmark(train_dataset, val_dataset, n_experiences=10, shuffle=True, seed=10, task_labels=False, per_exp_classes={0:10})
-    scenario2 = nc_benchmark(train_dataset, val_dataset, n_experiences=10, shuffle=True, seed=100, task_labels=False, per_exp_classes={0: 10})
-    scenario3 = nc_benchmark(train_dataset, val_dataset, n_experiences=10, shuffle=True, seed=1000, task_labels=False, per_exp_classes={0: 10})
+    scenario1 = nc_benchmark(train_dataset, val_dataset, n_experiences=10, shuffle=True, seed=5000, task_labels=False, per_exp_classes={0:10})
+    scenario2 = nc_benchmark(train_dataset, val_dataset, n_experiences=10, shuffle=True, seed=500, task_labels=False, per_exp_classes={0: 10})
+    scenario3 = nc_benchmark(train_dataset, val_dataset, n_experiences=10, shuffle=True, seed=50, task_labels=False, per_exp_classes={0: 10})
     scenario_list = [scenario1, scenario2, scenario3]
 
     "Fashion - build model"
