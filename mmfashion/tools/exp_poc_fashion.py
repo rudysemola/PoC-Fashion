@@ -73,8 +73,11 @@ def main():
     torch.manual_seed(0)
     train_dataset, val_dataset = torch.utils.data.random_split(dataset, [train_size, val_size])
     print('dataset splitted')
-    # build Benchmarks - Use nc_benchmark to setup the scenario and benchmark
-    scenario = nc_benchmark(train_dataset, val_dataset, n_experiences=10, shuffle=True, seed=50, task_labels=False, per_exp_classes={0:10})
+    # build Benchmarks over 3 run - Use nc_benchmark to setup the scenario and benchmark
+    scenario1 = nc_benchmark(train_dataset, val_dataset, n_experiences=10, shuffle=True, seed=10, task_labels=False, per_exp_classes={0:10})
+    scenario2 = nc_benchmark(train_dataset, val_dataset, n_experiences=10, shuffle=True, seed=100, task_labels=False, per_exp_classes={0: 10})
+    scenario3 = nc_benchmark(train_dataset, val_dataset, n_experiences=10, shuffle=True, seed=1000, task_labels=False, per_exp_classes={0: 10})
+    scenario_list = [scenario1, scenario2, scenario3]
 
     "Fashion - build model"
     model = GlobalCatePredictorFashion(num_classes=50, pretrained='checkpoint/vgg16.pth')  #
@@ -120,28 +123,36 @@ def main():
 
     "Fashion - TRAINING LOOP"
     print('Starting experiment...')
-    results = []
-    res = []
-    for experience in scenario.train_stream:
-        print("Start of experience: ", experience.current_experience)
-        print("Number of  Pattern: ", len(experience.dataset))
-        print("Current Classes: ", experience.classes_in_this_experience)
+    # list of dict/list to collect data
+    results_list = []
+    time_list = []
+    for scenario in scenario_list:
+        print("\n New RUN \n")
+        results = []
+        res = []
+        timer.time = {}  # reset time!
 
-        timer.start() #
-        res.append(cl_strategy.train(experience, num_workers=4))
-        timer.stop(experience.current_experience) #
-        print('Training completed')
+        for experience in scenario.train_stream:
+            print("Start of experience: ", experience.current_experience)
+            print("Number of  Pattern: ", len(experience.dataset))
+            print("Current Classes: ", experience.classes_in_this_experience)
 
-        print('Computing accuracy on the whole test set')
-        results.append(cl_strategy.eval(scenario.test_stream, num_workers=4))
+            timer.start()  #
+            res.append(cl_strategy.train(experience, num_workers=4))
+            timer.stop(experience.current_experience)  #
+            print('Training completed')
+
+            print('Computing accuracy on the whole test set')
+            results.append(cl_strategy.eval(scenario.test_stream, num_workers=4))
+
+        # Collect all the data
+        results_list.append(results)
+        time_list.append(timer.time)
 
     print()
-    print("Final Results eval:")
-    print(results, "\n")
-    print("Final Results TR= ")
-    print(timer.time)
-    print("GPU n. ", cuda)
-
+    print("Final Results over 3 runs Eval:", results_list)
+    print("Final Results over 3 run TR= ", time_list)
+    print("DeepFashion - GPU n. ", cuda)
 
 
 """
