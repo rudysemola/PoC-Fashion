@@ -1,5 +1,5 @@
 """
-    PoC Computer Vision
+    PoC Computer Vision (CORE50)
     Training (Avalanche) loop
 """
 
@@ -64,7 +64,7 @@ def main():
     print('model built')
 
 
-    "Fashion - build the Evaluation plugin (Avalanche)"
+    "CORE50 - build the Evaluation plugin (Avalanche)"
     interactive_logger = InteractiveLogger()
     # TODO: Tensorboard Logger!
     eval_plugin = EvaluationPlugin(
@@ -74,7 +74,7 @@ def main():
     )
 
 
-    " Fashion - CREATE THE STRATEGY INSTANCE (Replay)"
+    " CORE50 - CREATE THE STRATEGY INSTANCE (Replay)"
     if args.strategy == "CL":
         cl_strategy = Replay(
             model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
@@ -89,7 +89,7 @@ def main():
 
     "Print (DEBUG)"
 
-    "Fashion - TRAINING LOOP"
+    "CORE50 - TRAINING LOOP"
     print('Starting experiment...')
     results = []
     res = []
