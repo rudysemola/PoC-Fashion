@@ -57,7 +57,9 @@ def main():
 
 
     "CORE50 - Scenario and Benchmarck"
-    scenario = CORe50(scenario="nc")
+    scenario_list = [CORe50(scenario="nc", run=0), CORe50(scenario="nc", run=1), CORe50(scenario="nc", run=2)]
+    #DEGUG
+    print(scenario_list)
 
     "Fashion - build model"
     model = MobilenetV1(pretrained=True, latent_layer_num=20)
@@ -91,28 +93,34 @@ def main():
 
     "CORE50 - TRAINING LOOP"
     print('Starting experiment...')
-    results = []
-    res = []
-    for experience in scenario.train_stream:
-        print("Start of experience: ", experience.current_experience)
-        print("Number of  Pattern: ", len(experience.dataset))
-        print("Current Classes: ", experience.classes_in_this_experience)
+    results_list = [] # list of dict/list
+    time_list = [] # list of dict
+    for scenario in scenario_list:
+        print("\n New RUN \n")
+        results = []
+        res = []
+        timer.time = {} # reset time
+        for experience in scenario.train_stream:
+            print("Start of experience: ", experience.current_experience)
+            print("Number of  Pattern: ", len(experience.dataset))
+            print("Current Classes: ", experience.classes_in_this_experience)
 
-        timer.start() #
-        res.append(cl_strategy.train(experience, num_workers=4))
-        timer.stop(experience.current_experience) #
-        print('Training completed')
+            timer.start() #
+            res.append(cl_strategy.train(experience, num_workers=4))
+            timer.stop(experience.current_experience) #
+            print('Training completed')
 
-        print('Computing accuracy on the whole test set')
-        results.append(cl_strategy.eval(scenario.test_stream, num_workers=4))
+            print('Computing accuracy on the whole test set')
+            results.append(cl_strategy.eval(scenario.test_stream, num_workers=4))
+
+        # Collect al the data
+        results_list.append(results)
+        time_list.append(timer.time)
 
     print()
-    print("Final Results eval:")
-    print(results, "\n")
-    print("Final Results TR= ")
-    print(timer.time)
+    print("Final Results over 3 runs Eval:", results_list)
+    print("Final Results over 3 run TR= ", time_list)
     print("GPU n. ", cuda)
-
 
 
 """
