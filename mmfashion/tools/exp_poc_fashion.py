@@ -74,9 +74,9 @@ def main():
     train_dataset, val_dataset = torch.utils.data.random_split(dataset, [train_size, val_size])
     print('dataset splitted')
     # build Benchmarks over 3 run - Use nc_benchmark to setup the scenario and benchmark
-    scenario1 = nc_benchmark(train_dataset, val_dataset, n_experiences=10, shuffle=True, seed=5000, task_labels=False, per_exp_classes={0:10})
-    scenario2 = nc_benchmark(train_dataset, val_dataset, n_experiences=10, shuffle=True, seed=500, task_labels=False, per_exp_classes={0: 10})
-    scenario3 = nc_benchmark(train_dataset, val_dataset, n_experiences=10, shuffle=True, seed=50, task_labels=False, per_exp_classes={0: 10})
+    scenario1 = nc_benchmark(train_dataset, val_dataset, n_experiences=10, shuffle=True, seed=1, task_labels=False, per_exp_classes={0:10})
+    scenario2 = nc_benchmark(train_dataset, val_dataset, n_experiences=10, shuffle=True, seed=50, task_labels=False, per_exp_classes={0: 10})
+    scenario3 = nc_benchmark(train_dataset, val_dataset, n_experiences=10, shuffle=True, seed=100, task_labels=False, per_exp_classes={0: 10})
     scenario_list = [scenario1, scenario2, scenario3]
 
     "Fashion - build model"
@@ -105,15 +105,15 @@ def main():
     if args.strategy == "CL":
         cl_strategy = Replay(
             model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
-            CrossEntropyLoss(), mem_size=memory_size, device=device, train_mb_size=128, train_epochs=epochs, eval_mb_size=64,
+            CrossEntropyLoss(), mem_size=memory_size, device=device, train_mb_size=64, train_epochs=epochs, eval_mb_size=64,
             evaluator=eval_plugin)
     elif args.strategy == "Cum":
         cl_strategy = Cumulative(model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
-            CrossEntropyLoss(), device=device, train_mb_size=128, train_epochs=epochs, eval_mb_size=64,
+            CrossEntropyLoss(), device=device, train_mb_size=64, train_epochs=epochs, eval_mb_size=64,
             evaluator=eval_plugin)
     elif args.strategy == "JT":
         cl_strategy = JointTraining(model, SGD(model.parameters(), lr=1e-3, momentum=0.9),
-                                   CrossEntropyLoss(), device=device, train_mb_size=128, train_epochs=epochs, eval_mb_size=64,
+                                   CrossEntropyLoss(), device=device, train_mb_size=64, train_epochs=epochs, eval_mb_size=64,
                                     evaluator=eval_plugin)
         scenario = nc_benchmark(train_dataset, val_dataset, n_experiences=1, shuffle=True, seed=50, task_labels=False)
     else:
