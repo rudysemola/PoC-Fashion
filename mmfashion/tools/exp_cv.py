@@ -99,6 +99,8 @@ def main():
         results = []
         res = []
         timer.time = {} # reset time!
+        # reset model
+        cl_strategy.model = MobilenetV1(pretrained=True, latent_layer_num=20)
 
         for experience in scenario.train_stream:
             print("Start of experience: ", experience.current_experience)

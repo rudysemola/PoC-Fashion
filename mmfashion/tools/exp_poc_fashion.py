@@ -131,6 +131,8 @@ def main():
         results = []
         res = []
         timer.time = {}  # reset time!
+        # reset model
+        cl_strategy.model = GlobalCatePredictorFashion(num_classes=50, pretrained='checkpoint/vgg16.pth')  #
 
         for experience in scenario.train_stream:
             print("Start of experience: ", experience.current_experience)
